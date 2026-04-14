@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Can a Machine Read Despair? — Reddit Depression Classifier</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="masthead">
+  KCVanguard &nbsp;·&nbsp; NLP &amp; Mental Health &nbsp;·&nbsp; <span>Fren jwbnya bebas</span>
+</div>
+
+<div class="hero">
+  <div class="hero-label">Methodology &amp; Pipeline</div>
+  <h1>Can a Machine<br><em>Read Despair?</em></h1>
+  <p style="color: var(--muted); font-size: 1.05em; margin-bottom: 24px; font-weight: 300;">
+    Building a Reddit Depression Classifier with RoBERTa, DeBERTa-v3, MentalRoBERTa and Ensemble Learning
+  </p>
+  <div class="hero-meta">
+    Reddit Depression (Source: https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset)
+  </div>
+</div>
+
+<div class="article">
+
+  <p class="dropcap">Mental health is a crucial issue currently faced worldwide. According to the World Health Organization (WHO) in 2025, more than 1 billion people around the world live with mental health disorders such as anxiety, depression, and other mental disorders. One of the most common mental disorders is depression. According to WHO data in 2025, as much as 4% of the global population, or an estimated 280 to 332 million people, experience depression. Sufferers include 5.7% of adults (4.6% of men and 6.9% of women) and 5.9% of adults aged 70 and older.</p>
+
+  <p>Depression, or depressive disorder, is the most common mental health disorder in the world and often goes undetected in its early stages. Along with the increasing use of social media today, the Reddit platform has emerged as a place where users can freely express their thoughts and feelings and engage in discussions with other users. However, unwittingly, the texts written by users on the Reddit platform sometimes contain linguistic signals that can potentially be used to detect a person's psychological condition. This creates an interesting and significant opportunity to build a Natural Language Processing (NLP) model capable of distinguishing between posts written by users experiencing depression and those who are not. Consequently, this can serve as the foundation for an early warning system and a public mental health monitoring tool that can be applied to other social media platforms.</p>
+
+  <p>This article outlines the workflow of the NLP model built to solve this problem using a dataset containing more than 2.4 million Reddit posts. The ultimate goal of the developed model is to classify whether a Reddit post uploaded by a user indicates signs of depression or not. To compare the performance of each model, we trained and evaluated 11 different models, ranging from machine learning and deep learning approaches to mental health domain-based transformer models (BERT, RoBERTa, DeBERTa-v3, MentalRoBERTa) using the "Reddit Depression Dataset" from the Kaggle platform.</p>
+
+  <h2>Dataset</h2>
+  
+  <p>The data source used is the Reddit Depression Dataset, obtained from the Kaggle platform (rishabhkausish/reddit-depression-dataset). This dataset contains posts from various subreddits that have been binary-labeled based on indications of depression. Label = 1 indicates that the post uploaded by the user shows symptoms of depression. Whereas, label = 0 indicates the absence of depressive symptoms. This dataset consists of 2.470.778 Reddit posts collected from 24 subreddits. More detailed statistics regarding the dataset used can be seen in the table below.</p>
+  
+  <p><strong>Dataset Statistics Table</strong></p>
+
+  <p>The features included in the dataset are as follows. The main feature used in the modeling is the combination of the title and body columns, which is referred to as the text column.</p>
+  <img src="https://via.placeholder.com/150" alt="Placeholder">
+  <h2>Methodology &amp; Pipeline Architecture</h2>
+  <h3>Model Pipeline</h3>
+  <p>The overall pipeline is designed to compare different modeling approaches in a structured and fair way, starting from raw data up to final deployment.</p>
+  
+  <p>We begin with raw data, which then goes through data cleaning and label handling. This step ensures that the dataset is consistent, free from obvious noise, and that labels are properly formatted for supervised learning.</p>
+  
+  <p>Next, the dataset is split into train, validation, and test sets (70/15/15) using stratification. This is important to preserve the class distribution across all splits, especially since the task involves class imbalance.</p>
+  
+  <p>After splitting, the pipeline branches into two parallel paths:</p>
+
+  <div class="infobox">
+    <div class="infobox-title">1. Classical Pipeline</div>
+    <p>This path uses the clean_text_ml preprocessing. The output text is simplified and normalized, followed by TF-IDF vectorization (word-level and character-level). We also add the engineered numeric features discussed earlier. These combined features are then used as input for XGBoost, LightGBM, Bi-LSTM, and Bi-GRU models.</p>
+  </div>
+
+  <div class="infobox">
+    <div class="infobox-title">2. Transformer Pipeline</div>
+    <p>This path uses the clean_text_tr preprocessing, where token preservation is prioritized. The processed text is passed into an AutoTokenizer with a maximum sequence length of 256 tokens. The tokenized inputs are then used to fine-tune BERT, RoBERTa, DeBERTa-v3, and MentalRoBERTa.</p>
+  </div>
+
+  <p>Once both pipelines produce their respective predictions, we move to the ensemble stage. Here, we combine outputs from multiple models using several strategies:</p>
+  <ul>
+    <li>Weighted averaging, where stronger models contribute more</li>
+    <li>Simple averaging, treating all models equally</li>
+    <li>Stacking, using a meta-learner (Logistic Regression or LightGBM) to learn how to best combine predictions</li>
+  </ul>
+  
+  <p>From these ensemble results, we perform final model selection, choosing the best-performing configuration based on validation metrics.</p>
+  <p>The selected model is then prepared for deployment, completing the pipeline from raw data to a usable system.</p>
+  <p>This setup allows us to evaluate each approach independently while also exploring how much performance can be gained by combining them.</p>
+
+  <h2>EDA (Exploratory Data Analysis)</h2>
+
+  <p>From the observations conducted at this stage, a class imbalance was identified, where the non-depression class (label 0) dominates with 80.55% of the total data, while the depression class (label 1) accounts for only 19.45%. This condition became a key consideration in selecting several evaluation metrics (F1-Score, MCC, AUC-PR) and in applying class_weight='balanced' in most models. At this stage, a histogram visualization of word count distribution per class was also performed, showing that posts indicating depression tend to have longer text compared to non-depression posts, particularly within the range of 50–300 words.</p>
+
+  
+  <h2>Preprocessing &amp; Feature Engineering</h2>
+
+  <p>During the preprocessing stage, two preprocessing strategies are implemented.</p>
+
+  <h3>Classical Preprocessing (clean_text_ml)</h3>
+  <p>Used for traditional ML models (XGBoost, LightGBM) and RNNs. The text is fully normalized: all letters are lowercased, URLs and user/subreddit mentions are removed, contractions are expanded ("n't" → "not"), and numbers, punctuation, and stopwords are filtered out. The goal is to produce clean and compact text so that models relying on explicit features like TF-IDF can work more effectively.</p>
+
+  <h3>Transformer Preprocessing (clean_text_tr)</h3>
+  <p>Used for BERT, RoBERTa, DeBERTa-v3, and MentalRoBERTa. In this case, preprocessing is more conservative. Instead of removing elements like URLs or mentions, we replace them with special tokens such as [URL], [USER], and [SUBREDDIT]. The idea is to preserve as much of the original structure as possible, since transformers are designed to capture contextual meaning. Removing too much information could reduce useful signals.</p>
+
+  <p>Besides the text itself, we also engineered several numeric features for the classical ML models:</p>
+  <p><strong>[TABEL FITUR ENGINEERING]</strong></p>
+  
+  <p>These features are scaled using StandardScaler before being combined with TF-IDF vectors as input to the classical ML models. This combination allows the model to capture both textual patterns and higher-level characteristics of the text.</p>
+
+  <div class="pullquote">
+    Why not rely just use transformers? The goal here is to compare approaches. Well-prepared classical ML models can still perform strongly, and they provide a useful baseline. In some cases, the gap between classical methods and transformers is smaller than expected.
+  </div>
+
+  <h2>Modeling Approach</h2>
+
+  <p>We trained a total of 11 models from various categories, then compared them head-to-head.</p>
+
+  <h3>Classical Machine Learning — XGBoost &amp; LightGBM</h3>
+  <p>These two gradient boosting models act as our baselines. The input features combine TF-IDF (both word-level and character-level) with the numeric features we engineered earlier. We include both because, although they are similar in principle, they differ in how trees are constructed. LightGBM is generally faster and more memory-efficient, especially for larger datasets, while XGBoost is more widely used as a benchmark. With a dataset of around 30,000 training samples, both models remain practical and competitive.</p>
+
+  <h3>Deep Learning (RNN) — Bi-LSTM &amp; Bi-GRU</h3>
+  <p>These models represent a middle ground between classical machine learning and transformers. LSTM and GRU process text sequentially, and the bidirectional setup allows them to capture context from both left-to-right and right-to-left directions. We build a custom vocabulary from the training data, map words into embeddings, and convert each text into a sequence of tokens with a maximum length of 256. Compared to classical models, these architectures are more capable of capturing linguistic patterns, but they still lack the flexibility and generalization ability of large pre-trained transformers.</p>
+
+  <h3>Pre-trained Transformers — BERT, RoBERTa, DeBERTa-v3, MentalRoBERTa</h3>
+  <p>This is the core part of the modeling approach. We use four transformer-based models:</p>
+
+  <div class="model-grid">
+    <div class="model-card">
+      <div class="model-card-label">Foundation</div>
+      <div class="model-card-name">BERT</div>
+      <p>Serves as a standard baseline. It is pre-trained on Wikipedia and BookCorpus using masked language modeling.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-card-label">Robust</div>
+      <div class="model-card-name">RoBERTa</div>
+      <p>An improved version of BERT, trained on more data and for longer, without the Next Sentence Prediction objective. It is generally more robust in practice.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-card-label">State-of-the-art</div>
+      <div class="model-card-name">DeBERTa-v3</div>
+      <p>Uses a more advanced architecture with disentangled attention, separating content and positional information to improve representation quality.</p>
+    </div>
+    <div class="model-card">
+      <div class="model-card-label">Domain-specific</div>
+      <div class="model-card-name">MentalRoBERTa</div>
+      <p>A RoBERTa model that has been further trained on mental health-related text. This makes it more sensitive to psychological context and language patterns specific to the domain.</p>
+    </div>
+  </div>
+
+  <p>We chose MentalRoBERTa intentionally. Models that are already exposed to domain-specific data usually require less fine-tuning when applied to similar tasks. In this case, it is expected to better capture subtle signals related to mental health compared to general-purpose models.</p>
+
+  <p>All transformer models are fine-tuned using a similar setup: 5 epochs, a small learning rate (around 1e-5 to 2e-5), mixed precision training (AMP) for efficiency, and early stopping to reduce overfitting. To address class imbalance, we apply pos_weight in the loss function.</p>
+
+
+  <h2>Ensemble Learning: When One Model Is Not Enough</h2>
+
+  <p>After all individual models are trained, we enter a very interesting phase called ensemble learning. The idea is simple, instead of relying on a single model, we combine the predictions of several models at once.</p>
+
+  <h3>Strategy 1: Weighted Average (Top-3 Transformers)</h3>
+  <p>We start by combining DeBERTa-v3, MentalRoBERTa, and RoBERTa. We test two combination methods:</p>
+  <p><strong>Simple average:</strong> The probabilities from the three models are summed and divided by three. It is straightforward, transparent, and requires no extra assumptions.</p>
+  <p><strong>Optimized weighted average:</strong> The weights are automatically determined using Nelder-Mead optimization to maximize the F1-score on the validation set. As a result, each model receives a weight based on its reliability on the validation data.</p>
+
+  <h3>Strategy 2: Top-4 Transformer Ensemble</h3>
+  <p>This approach is expanded by including the BERT-base model. The models are ranked based on their validation F1 scores, and the weighted average is optimized again. This provides more flexibility. If BERT helps cover the weaknesses of the other models, its weight will increase.</p>
+
+  <h3>Strategy 3: Stacking with a Meta-Learner</h3>
+  <p>This is the most advanced method. The probabilities of all 8 models (XGBoost, LightGBM, Bi-LSTM, Bi-GRU, BERT, RoBERTa, DeBERTa-v3, MentalRoBERTa) are collected into a single meta-feature matrix. Then, a meta-learner (in this case, Logistic Regression and LightGBM) is trained to learn how to coordinate the outputs from all these models.</p>
+
+  <div class="pullquote">
+    Stacking is a systematic way of learning that in certain conditions, model A is more reliable, while in other conditions, model B is more accurate. The meta-learner learns these patterns from the validation data.
+    <cite>The core principle of stacked generalization</cite>
+  </div>
+
+  <p>An interesting output from the meta-learner is its coefficients. We can see which model the meta-learner trusts the most, providing insight into each model's contribution within the ensemble.</p>
+
+  
+  <h2>Results & Evaluation</h2>
+
+  <p>Each model is evaluated on the same held-out test set (3,000 samples) using a consistent evaluation function that reports eight metrics</p>
+  <ul>
+    <li><strong>Accuracy</strong>, Overall correctness. Included for completeness, although it can be misleading in the presence of class imbalance.</li>
+    <li><strong>Precision</strong>, The proportion of posts predicted as depressed that are actually depressed.</li>
+    <li><strong>Recall</strong>, The proportion of truly depressed posts that the model successfully identifies.</li>
+    <li><strong>F1-Score</strong>, The harmonic mean of precision and recall, and the primary metric used to evaluate model performance.</li>
+    <li><strong>Specificity</strong>, The true negative rate, representing the proportion of non-depressed posts correctly classified.</li>
+    <li><strong>MCC (Matthews Correlation Coefficient)</strong>, A balanced metric that remains reliable even under class imbalance.</li>
+    <li><strong>AUC-ROC</strong>, The area under the Receiver Operating Characteristic curve.</li>
+    <li><strong>AUC-PR</strong>, The area under the Precision-Recall curve.</li>
+  </ul>
+  
+  <p>In a problem like this, evaluating model performance is not as straightforward as looking at accuracy alone. With more than 80% of the data belonging to the non-depressed class, a model could simply predict 'Not Depressed' for every post and still achieve over 80% accuracy, while being completely ineffective in practice.</p>
+
+  <p>This imbalance forces us to rethink how performance should be measured. Instead of relying on a single metric, we define a hierarchy of evaluation metrics that better reflects the real-world objective of the task.</p>
+
+  <p>At the core of this evaluation is the F1-Score, which serves as the primary metric for model selection and ranking. By combining precision and recall into a single value, F1 ensures that the model is not only capable of detecting depressed posts, but also reliable when making those predictions. In a mental health context, both aspects are equally important. A model that misses too many cases or produces too many false alarms is simply not useful.</p>
+
+  <p>To complement this, we use the Matthews Correlation Coefficient (MCC) as a secondary metric. Unlike F1, MCC considers all elements of the confusion matrix, providing a more balanced view of performance across both classes. This makes it particularly useful when comparing models with similar F1 scores, as it highlights those that perform consistently rather than favoring one class.</p>
+
+  <p>We also include AUC-ROC to evaluate how well the model separates depressed and non-depressed posts across different thresholds. A high AUC-ROC indicates that the model produces well-ordered probability outputs, which is important for reliable decision-making and threshold tuning.</p>
+
+  <p>Although AUC-PR is especially useful for imbalanced datasets, it is treated as a supporting metric rather than a primary one. This is because AUC-PR evaluates performance across all possible thresholds, while the main concern here is how the model performs at the specific threshold used in deployment.</p>
+
+  <p>In practice, model selection follows a clear priority. F1-Score is used for ranking, MCC acts as a tiebreaker, and AUC-ROC provides additional validation. Accuracy is reported for completeness but is not used for decision-making.</p>
+
+  <p>Other metrics such as precision, recall, and specificity are still reported to provide additional context on model behavior, particularly in understanding trade-offs between false positives and false negatives. However, they are not used as primary criteria for model selection.</p>
+
+  <p>The results can be summarized as follows. The figure below provides an overview of the comparison between models:</p>
+
+  <p><strong>Model Performance Summary (sorted by F1)</strong></p>
+
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-model">Model</th>
+        <th>Tier</th>
+        <th>Accuracy</th>
+        <th>Precision</th>
+        <th>Recall</th>
+        <th>F1</th>
+        <th>Specificity</th>
+        <th>MCC</th>
+        <th>AUC-ROC</th>
+        <th>AUC-PR</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="best-row">
+        <td class="col-model">Ensemble Avg (DeBERTa+MentalRoBERTa+RoBERTa) ★</td>
+        <td><span class="badge badge-ens">Ensemble</span></td>
+        <td>0.9647</td>
+        <td>0.8974</td>
+        <td>0.9194</td>
+        <td>0.9083</td>
+        <td>0.9753</td>
+        <td>0.8865</td>
+        <td>0.9874</td>
+        <td>0.9514</td>
+      </tr>
+      <tr>
+        <td class="col-model">Ensemble Weighted (DeBERTa+MentalRoBERTa+RoBERTa)</td>
+        <td><span class="badge badge-ens">Ensemble</span></td>
+        <td>0.9647</td>
+        <td>0.8974</td>
+        <td>0.9194</td>
+        <td>0.9083</td>
+        <td>0.9753</td>
+        <td>0.8865</td>
+        <td>0.9876</td>
+        <td>0.9561</td>
+      </tr>
+      <tr>
+        <td class="col-model">Ensemble Top-4 Transformers (Avg)</td>
+        <td><span class="badge badge-ens">Ensemble</span></td>
+        <td>0.9640</td>
+        <td>0.8985</td>
+        <td>0.9142</td>
+        <td>0.9062</td>
+        <td>0.9757</td>
+        <td>0.8840</td>
+        <td>0.9887</td>
+        <td>0.9571</td>
+      </tr>
+      <tr>
+        <td class="col-model">Ensemble Top-4 Transformers (Weighted)</td>
+        <td><span class="badge badge-ens">Ensemble</span></td>
+        <td>0.9640</td>
+        <td>0.8985</td>
+        <td>0.9142</td>
+        <td>0.9062</td>
+        <td>0.9757</td>
+        <td>0.8840</td>
+        <td>0.9886</td>
+        <td>0.9579</td>
+      </tr>
+      <tr>
+        <td class="col-model">Stacking: LR Meta-Learner</td>
+        <td><span class="badge badge-ens">Ensemble</span></td>
+        <td>0.9623</td>
+        <td>0.8754</td>
+        <td>0.9352</td>
+        <td>0.9043</td>
+        <td>0.9687</td>
+        <td>0.8816</td>
+        <td>0.9868</td>
+        <td>0.9523</td>
+      </tr>
+      <tr>
+        <td class="col-model">MentalRoBERTa</td>
+        <td><span class="badge badge-tf">Transformer</span></td>
+        <td>0.9603</td>
+        <td>0.8897</td>
+        <td>0.9037</td>
+        <td>0.8966</td>
+        <td>0.9737</td>
+        <td>0.8721</td>
+        <td>0.9833</td>
+        <td>0.9247</td>
+      </tr>
+      <tr>
+        <td class="col-model">DeBERTa-v3</td>
+        <td><span class="badge badge-tf">Transformer</span></td>
+        <td>0.9597</td>
+        <td>0.8866</td>
+        <td>0.9037</td>
+        <td>0.8951</td>
+        <td>0.9728</td>
+        <td>0.8702</td>
+        <td>0.9853</td>
+        <td>0.9477</td>
+      </tr>
+      <tr>
+        <td class="col-model">RoBERTa</td>
+        <td><span class="badge badge-tf">Transformer</span></td>
+        <td>0.9587</td>
+        <td>0.8694</td>
+        <td>0.9212</td>
+        <td>0.8946</td>
+        <td>0.9675</td>
+        <td>0.8694</td>
+        <td>0.9854</td>
+        <td>0.9395</td>
+      </tr>
+      <tr>
+        <td class="col-model">Stacking: LightGBM Meta-Learner</td>
+        <td><span class="badge badge-ens">Ensemble</span></td>
+        <td>0.9537</td>
+        <td>0.8323</td>
+        <td>0.9475</td>
+        <td>0.8862</td>
+        <td>0.9551</td>
+        <td>0.8601</td>
+        <td>0.9885</td>
+        <td>0.9593</td>
+      </tr>
+      <tr>
+        <td class="col-model">BERT-base</td>
+        <td><span class="badge badge-tf">Transformer</span></td>
+        <td>0.9560</td>
+        <td>0.8955</td>
+        <td>0.8704</td>
+        <td>0.8828</td>
+        <td>0.9761</td>
+        <td>0.8558</td>
+        <td>0.9862</td>
+        <td>0.9469</td>
+      </tr>
+      <tr>
+        <td class="col-model">XGBoost</td>
+        <td><span class="badge badge-ml">ML</span></td>
+        <td>0.9380</td>
+        <td>0.8203</td>
+        <td>0.8634</td>
+        <td>0.8413</td>
+        <td>0.9555</td>
+        <td>0.8032</td>
+        <td>0.9725</td>
+        <td>0.9201</td>
+      </tr>
+      <tr>
+        <td class="col-model">Bi-LSTM</td>
+        <td><span class="badge badge-dl">DL</span></td>
+        <td>0.9340</td>
+        <td>0.7919</td>
+        <td>0.8862</td>
+        <td>0.8364</td>
+        <td>0.9452</td>
+        <td>0.7972</td>
+        <td>0.9709</td>
+        <td>0.9033</td>
+      </tr>
+      <tr>
+        <td class="col-model">LightGBM</td>
+        <td><span class="badge badge-ml">ML</span></td>
+        <td>0.9353</td>
+        <td>0.8095</td>
+        <td>0.8634</td>
+        <td>0.8356</td>
+        <td>0.9522</td>
+        <td>0.7960</td>
+        <td>0.9731</td>
+        <td>0.9196</td>
+      </tr>
+      <tr>
+        <td class="col-model">Bi-GRU</td>
+        <td><span class="badge badge-dl">DL</span></td>
+        <td>0.9323</td>
+        <td>0.7796</td>
+        <td>0.8984</td>
+        <td>0.8348</td>
+        <td>0.9403</td>
+        <td>0.7957</td>
+        <td>0.9715</td>
+        <td>0.9089</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Final Model Selection</h2>
+
+  <p>After evaluating all 14 model configurations across eight metrics, one configuration stands out as the most suitable for deployment: the <mark>simple average ensemble of DeBERTa-v3, MentalRoBERTa, and RoBERTa</mark>. This model achieved an F1-Score of 0.9083, along with an MCC of 0.8865 and an AUC-ROC of 0.9874 on the held-out test set.</p>
+
+  <p>What makes this result convincing is not only the performance itself, but what it implies. An F1-Score above 0.90 on a heavily imbalanced dataset suggests that the model is actually learning meaningful linguistic patterns of distress, rather than relying on class distribution. The high specificity (0.9753) supports this interpretation, showing that the model does not simply over-predict depression at the expense of non-depressed cases.</p>
+
+  <div class="selection-card">
+    <div class="selection-card-header">
+      <span class="selection-badge">★ Selected Model</span>
+      <span class="selection-name">Ensemble Avg — DeBERTa-v3 + MentalRoBERTa + RoBERTa</span>
+    </div>
+    <div class="selection-metrics">
+      <div class="sel-metric">
+        <div class="sel-metric-value">0.9083</div>
+        <div class="sel-metric-label">F1-Score</div>
+      </div>
+      <div class="sel-metric">
+        <div class="sel-metric-value">0.8865</div>
+        <div class="sel-metric-label">MCC</div>
+      </div>
+      <div class="sel-metric">
+        <div class="sel-metric-value">0.9874</div>
+        <div class="sel-metric-label">AUC-ROC</div>
+      </div>
+      <div class="sel-metric">
+        <div class="sel-metric-value">0.9647</div>
+        <div class="sel-metric-label">Accuracy</div>
+      </div>
+    </div>
+  </div>
+
+  <p>A reasonable question is why not choose the weighted ensemble, which reaches identical F1 and MCC scores, or the stacking approach, which is more flexible in theory. The answer comes down to the balance between performance and complexity. Since both the simple and weighted ensembles produce the same results on the test set, the simpler approach is preferred. Plain averaging requires no additional optimization, avoids the risk of overfitting to validation data, and is easier to reproduce and maintain in a production setting.</p>
+
+  <p>The stacking method, using a Logistic Regression meta-learner, does achieve strong recall (0.9352), which may be useful in certain applications. However, its overall F1 (0.9043) and MCC (0.8816) are slightly lower than the top-3 ensemble. More importantly, stacking introduces an extra layer of dependency. Any update to the base models would require retraining the meta-learner, which increases maintenance effort without providing a clear practical benefit.</p>
+
+  <div class="pullquote">
+    In general, added complexity should be justified by consistent improvements. In this case, the simpler solution performs just as well, so it becomes the more practical choice.
+  </div>
+
+  <p>The selection of DeBERTa-v3, MentalRoBERTa, and RoBERTa is also intentional. Each model contributes something different. DeBERTa-v3 offers architectural improvements through disentangled attention. MentalRoBERTa brings domain-specific knowledge from mental health data. RoBERTa provides strong general language understanding. Together, they complement each other, and their combined predictions are more stable than any single model alone, as reflected in the evaluation results.</p>
+
+  <h2>Summary</h2>
+
+  <p>This project began with a simple question: can a machine recognize expressions of despair in text? Based on the results, the answer is yes, to a meaningful extent.</p>
+
+  <p>Using the Reddit Depression Dataset, we built an end-to-end pipeline that covers classical machine learning, deep learning, and large pre-trained transformer models. The goal was not only to achieve strong performance, but also to make comparisons fair and interpretable across different approaches.</p>
+
+  <p>Across the 14 configurations evaluated, a clear pattern emerges. Classical machine learning models such as XGBoost and LightGBM provide a solid baseline, with F1 scores above 0.83. Bidirectional RNN models (Bi-LSTM and Bi-GRU) perform in a similar range, generally improving recall while sacrificing some precision. Transformer-based models represent a clear step forward: BERT, RoBERTa, DeBERTa-v3, and MentalRoBERTa all exceed 0.88 in F1, with DeBERTa-v3 and MentalRoBERTa consistently ranking highest among individual models. Ensemble methods push performance further, with the top-3 transformer ensemble reaching an F1 of 0.9083, the best result observed.</p>
+
+  <p>Several takeaways stand out. First, domain-specific pretraining is important. MentalRoBERTa performs on par with larger models like DeBERTa-v3, suggesting that alignment between training data and task domain can compensate for differences in architecture. Second, ensemble learning is effective when the individual models are already strong and complementary. Combining weaker models tends to add noise rather than improve performance. Third, handling class imbalance is essential. Without it, models would default to predicting the majority class, resulting in misleadingly high accuracy but poor real-world usefulness.</p>
+
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="summary-icon">11</div>
+      <div class="summary-desc">Individual models trained and evaluated</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-icon">14</div>
+      <div class="summary-desc">Total configurations including ensembles</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-icon">0.9083</div>
+      <div class="summary-desc">Best F1-Score achieved (top-3 ensemble)</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-icon">2.4M+</div>
+      <div class="summary-desc">Reddit posts in the source dataset</div>
+    </div>
+  </div>
+
+  <p>There are still limitations to consider. The model is trained on Reddit data, which reflects specific language patterns, demographics, and cultural context. As a result, it may not generalize well to other populations. In addition, the model evaluates posts in isolation and does not account for changes in a user’s mental state over time.</p>
+
+  <p>These constraints define how the model should be used. It is better suited as a screening tool that highlights potentially concerning content for human review, rather than as a diagnostic system. When applied carefully, it can support broader efforts in monitoring public mental health by surfacing signals that might otherwise be overlooked.</p>
+
+  <p>Whether a machine can truly understand despair is still open to interpretation. What this work shows is that it can detect consistent patterns associated with it, with a level of reliability that is practically useful.</p>
+
+  <div class="references">
+    <h2>References</h2>
+    <p>· https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset</p>
+    <p>· https://www.who.int/health-topics/depression</p>
+    <p>· https://www.who.int/news/item/02-09-2025-over-a-billion-people-living-with-mental-health-conditions-services-require-urgent-scale-up</p>
+    <p>· https://www.who.int/news-room/fact-sheets/detail/depression</p>
+  </div>
+
+</div>
+</body>
+</html>

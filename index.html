@@ -20,7 +20,7 @@
     Building a Reddit Depression Classifier with RoBERTa, DeBERTa-v3, MentalRoBERTa and Ensemble Learning
   </p>
   <div class="hero-meta">
-    Reddit Depression (Source: https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset)
+    <span>Reddit Depression (Source: <a href="https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset" target="_blank">https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset</a>)</span>
   </div>
 </div>
 
@@ -222,26 +222,42 @@
     <table>
       <thead>
         <tr>
-          <th class="col-model">Statistics</th>
-          <th>Value</th>
+          <th>Feature</th>
+          <th class="col-model">Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="col-model">Total Rows</td>
-          <td>2.470.778 posts</td>
+          <td>word_count</td>
+          <td class="col-model">Word count in the cleaned text</td>
         </tr>
         <tr>
-          <td class="col-model">Total Columns</td>
-          <td>8 features</td>
+          <td>char_count</td>
+          <td class="col-model">Character count after preprocessing</td>
         </tr>
         <tr>
-          <td class="col-model">Label 0 (Non-Depression)</td>
-          <td>80.55%</td>
+          <td>sentence_count</td>
+          <td class="col-model">Number of sentences based on NLTK sent_tokenize</td>
         </tr>
         <tr>
-          <td class="col-model">Label 1 (Depression)</td>
-          <td>19.45%</td>
+          <td>lexical_diversity</td>
+          <td class="col-model">Ratio of unique words to total words (type-token ratio)</td>
+        </tr>
+        <tr>
+          <td>avg_word_length</td>
+          <td class="col-model">Average word length in characters</td>
+        </tr>
+        <tr>
+          <td>polarity</td>
+          <td class="col-model">Sentiment polarity score from TextBlob (range -1 to +1)</td>
+        </tr>
+        <tr>
+          <td>subjectivity</td>
+          <td class="col-model">Subjectivity score from TextBlob (range 0 to 1)</td>
+        </tr>
+        <tr>
+          <td>punc_ratio</td>
+          <td class="col-model">Ratio of punctuation to total characters in the original text</td>
         </tr>
       </tbody>
     </table>
@@ -618,10 +634,18 @@
 
   <div class="references">
     <h2>References</h2>
-    <p>· https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset</p>
-    <p>· https://www.who.int/health-topics/depression</p>
-    <p>· https://www.who.int/news/item/02-09-2025-over-a-billion-people-living-with-mental-health-conditions-services-require-urgent-scale-up</p>
-    <p>· https://www.who.int/news-room/fact-sheets/detail/depression</p>
+    
+    <p>Ji, S., Zhang, T., Ansari, L., Fu, J., Tiwari, P., & Cambria, E. (2021). MentalBERT: Publicly available pretrained language models for mental healthcare. arXiv. <a href="https://arxiv.org/abs/2110.15621" target="_blank">https://arxiv.org/abs/2110.15621</a></p>
+
+    <p>Kaggle. (n.d.). Reddit depression dataset. <a href="https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset" target="_blank">https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset</a></p>
+
+    <p>Singhal, K., et al. (2024). BERT and RoBERTa models for enhanced detection of depression in social media text. Procedia Computer Science, 245, 202–209. <a href="https://doi.org/10.1016/j.procs.2024.10.244" target="_blank">https://doi.org/10.1016/j.procs.2024.10.244</a></p>
+
+    <p>World Health Organization. (n.d.). Depression (mental health topic). <a href="https://www.who.int/health-topics/depression" target="_blank">https://www.who.int/health-topics/depression</a></p>
+
+    <p>World Health Organization. (2025, September 2). Over a billion people living with mental health conditions; services require urgent scale-up. <a href="https://www.who.int/news/item/02-09-2025-over-a-billion-people-living-with-mental-health-conditions-services-require-urgent-scale-up" target="_blank">https://www.who.int/news/item/02-09-2025-over-a-billion-people-living-with-mental-health-conditions-services-require-urgent-scale-up</a></p>
+
+    <p>World Health Organization. (n.d.). Depression fact sheet. <a href="https://www.who.int/news-room/fact-sheets/detail/depression" target="_blank">https://www.who.int/news-room/fact-sheets/detail/depression</a></p>
   </div>
 
 </div>

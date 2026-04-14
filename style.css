@@ -472,3 +472,79 @@ mark {
   .summary-grid { grid-template-columns: 1fr; }
   .selection-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
+
+
+
+.flowchart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 3em 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.fc-node {
+  background: var(--bg);
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  padding: 12px 24px;
+  text-align: center;
+  color: var(--ink);
+  width: fit-content;
+  max-width: 320px;
+}
+
+.fc-arrow {
+  color: var(--ink);
+  font-size: 20px;
+  margin: 8px 0;
+}
+
+.fc-split {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  justify-content: center;
+}
+
+.fc-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 320px;
+}
+
+.fc-join {
+  display: flex;
+  width: 280px;
+  justify-content: space-between;
+  color: var(--ink);
+  font-size: 20px;
+  margin: 8px 0;
+}
+
+.fc-join-mobile {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .fc-split {
+    flex-direction: column;
+    gap: 0;
+  }
+  .fc-branch {
+    max-width: 100%;
+  }
+  .fc-join {
+    display: none;
+  }
+  .fc-join-mobile {
+    display: block;
+    color: var(--ink);
+    font-size: 20px;
+    margin: 8px 0;
+  }
+}

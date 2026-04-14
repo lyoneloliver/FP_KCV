@@ -35,13 +35,144 @@
   <h2>Dataset</h2>
   
   <p>The data source used is the Reddit Depression Dataset, obtained from the Kaggle platform (rishabhkausish/reddit-depression-dataset). This dataset contains posts from various subreddits that have been binary-labeled based on indications of depression. Label = 1 indicates that the post uploaded by the user shows symptoms of depression. Whereas, label = 0 indicates the absence of depressive symptoms. This dataset consists of 2.470.778 Reddit posts collected from 24 subreddits. More detailed statistics regarding the dataset used can be seen in the table below.</p>
-  
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-model">Statistics</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-model">Total Rows</td>
+          <td>2.470.778 posts</td>
+        </tr>
+        <tr>
+          <td class="col-model">Total Columns</td>
+          <td>8 features</td>
+        </tr>
+        <tr>
+          <td class="col-model">Label 0 (Non-Depression)</td>
+          <td>80.55%</td>
+        </tr>
+        <tr>
+          <td class="col-model">Label 1 (Depression)</td>
+          <td>19.45%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <p><strong>Dataset Statistics Table</strong></p>
 
   <p>The features included in the dataset are as follows. The main feature used in the modeling is the combination of the title and body columns, which is referred to as the text column.</p>
-  <img src="https://via.placeholder.com/150" alt="Placeholder">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-model">Column</th>
+          <th>Data Types</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-model">Unnamed: 0</td>
+          <td>Integer</td>
+          <td>Original row ID from the source dataset</td>
+        </tr>
+        <tr>
+          <td class="col-model">subreddit</td>
+          <td>String</td>
+          <td>Name of the originating subreddit</td>
+        </tr>
+        <tr>
+          <td class="col-model">title</td>
+          <td>String</td>
+          <td>Title of the Reddit post</td>
+        </tr>
+        <tr>
+          <td class="col-model">body</td>
+          <td>String</td>
+          <td>Text content of the Reddit post</td>
+        </tr>
+        <tr>
+          <td class="col-model">upvotes</td>
+          <td>Integer</td>
+          <td>Number of upvotes received by the post</td>
+        </tr>
+        <tr>
+          <td class="col-model">created utc</td>
+          <td>Integer</td>
+          <td>Post creation timestamp (Unix)</td>
+        </tr>
+        <tr>
+          <td class="col-model">num comments</td>
+          <td>Integer</td>
+          <td>Number of comments on the post</td>
+        </tr>
+        <tr>
+          <td class="col-model">label</td>
+          <td>Integer</td>
+          <td>Target: 0 = Non-Depression, 1 = Depression</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
   <h2>Methodology &amp; Pipeline Architecture</h2>
   <h3>Model Pipeline</h3>
+  <div class="flowchart">
+  <div class="fc-node">Raw Data</div>
+  <div class="fc-arrow">↓</div>
+
+  <div class="fc-node">Data Cleaning &amp; Label Handling</div>
+  <div class="fc-arrow">↓</div>
+
+  <div class="fc-node">Train/Val/Test split (70, 15, 15, stratified)</div>
+  
+  <div class="fc-split">
+    <div class="fc-branch">
+      <div class="fc-arrow">↙</div>
+      <div class="fc-node">Classical pipeline<br>(clean_text_ml) +<br>stopword removal</div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node">TF-IDF (word + char)<br>+ new features</div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node">XGBoost/LightGBM<br>Bi-LSTM/Bi-GRU</div>
+    </div>
+    
+    <div class="fc-branch">
+      <div class="fc-arrow">↘</div>
+      <div class="fc-node">Transformer pipeline<br>(clean_text_tr) +<br>token preservation</div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node">AutoTokenizer<br>(max_len = 256)</div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node">BERT/<br>RoBERTa/DeBERTa/<br>MentalRoBERTa</div>
+    </div>
+  </div>
+
+  <div class="fc-join">
+    <span>↘</span>
+    <span>↙</span>
+  </div>
+  <div class="fc-join-mobile">↓</div>
+
+  <div class="fc-node">
+    Ensemble:<br>
+    - Weighted<br>
+    - Average<br>
+    - Stacking Meta Learner (LR/LightGBM)
+  </div>
+  <div class="fc-arrow">↓</div>
+
+  <div class="fc-node">Final Model Selection</div>
+  <div class="fc-arrow">↓</div>
+
+  <div class="fc-node">Deployment</div>
+</div>
+
   <p>The overall pipeline is designed to compare different modeling approaches in a structured and fair way, starting from raw data up to final deployment.</p>
   
   <p>We begin with raw data, which then goes through data cleaning and label handling. This step ensures that the dataset is consistent, free from obvious noise, and that labels are properly formatted for supervised learning.</p>
@@ -87,7 +218,34 @@
   <p>Used for BERT, RoBERTa, DeBERTa-v3, and MentalRoBERTa. In this case, preprocessing is more conservative. Instead of removing elements like URLs or mentions, we replace them with special tokens such as [URL], [USER], and [SUBREDDIT]. The idea is to preserve as much of the original structure as possible, since transformers are designed to capture contextual meaning. Removing too much information could reduce useful signals.</p>
 
   <p>Besides the text itself, we also engineered several numeric features for the classical ML models:</p>
-  <p><strong>[TABEL FITUR ENGINEERING]</strong></p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-model">Statistics</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-model">Total Rows</td>
+          <td>2.470.778 posts</td>
+        </tr>
+        <tr>
+          <td class="col-model">Total Columns</td>
+          <td>8 features</td>
+        </tr>
+        <tr>
+          <td class="col-model">Label 0 (Non-Depression)</td>
+          <td>80.55%</td>
+        </tr>
+        <tr>
+          <td class="col-model">Label 1 (Depression)</td>
+          <td>19.45%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   
   <p>These features are scaled using StandardScaler before being combined with TF-IDF vectors as input to the classical ML models. This combination allows the model to capture both textual patterns and higher-level characteristics of the text.</p>
 
